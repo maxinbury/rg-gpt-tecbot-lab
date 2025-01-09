@@ -1,0 +1,31 @@
+name: Deploy Bicep to Azure using azd
+
+on:
+  push:
+    branches:
+      - test-deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Azure CLI
+        uses: azure/login@v1 # Login usando la acción de Azure Login
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install Bicep CLI (optional, can be pre-installed on runners)
+        run: |
+          curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          chmod +x ./bicep
+          sudo mv ./bicep /usr/local/bin/bicep
+
+      - name: Deploy Bicep template
+        run: |
+          az deployment group create \
+            --resource-group rg_gpt_bot_lab \
+            --template-file ./infra/core/test/appservice.bicep \
+            
